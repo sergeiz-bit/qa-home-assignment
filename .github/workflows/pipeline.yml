@@ -1,0 +1,30 @@
+name: Run xUnit Tests in Docker
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        run: docker --version
+
+      - name: Build Docker Image
+        run: docker build -t qa-home-assignement
+
+      - name: Run xUnit Tests in Docker
+        run: docker run --rm qa-home-assignement dotnet test --logger trx --results-directory /test-results
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: /test-results
