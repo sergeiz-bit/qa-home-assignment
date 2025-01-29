@@ -12,16 +12,13 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker
-        run: docker --version
+        uses: actions/checkout@v4        
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker Image
-        run: docker build -t qa-home-assignement
+        run: docker build -t qa-home-assignement .
 
       - name: Run xUnit Tests in Docker
         run: docker run --rm qa-home-assignement dotnet test --logger trx --results-directory /test-results
