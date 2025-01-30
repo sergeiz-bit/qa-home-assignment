@@ -1,4 +1,4 @@
-name: Run xUnit Tests in Docker with Code Coverage
+name: Run xUnit Tests in Docker with Coverage
 
 on:
   push:
@@ -16,25 +16,30 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up .NET 8
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.x'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker Image for Tests
+      - name: Build Docker Image
         run: docker build -t qa-home-assignment -f Dockerfile .
 
-      - name: Run Tests in Docker and Generate Coverage
-        run: docker run --rm -v ${{ github.workspace }}/TestResults:/app/TestResults qa-home-assignment
+      - name: Run Tests in Docker
+        run: |
+          docker run --rm -v ${{ github.workspace }}/TestResults:/app/TestResults qa-home-assignment
 
-      - name: Install ReportGenerator
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+      - name: Generate Coverage Report
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+          reportgenerator -reports:"TestResults/*/coverage.cobertura.xml" -targetdir:"CoverageReport" -reporttypes:Html
 
-      - name: Convert Coverage to HTML Report
-        run: reportgenerator -reports:TestResults/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html
-
-      - name: Upload Coverage Report as Artifact
+      - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
-          path: coverage-report
+          path: CoverageReport
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: TestResults/*/coverage.cobertura.xml
+          fail_ci_if_error: true

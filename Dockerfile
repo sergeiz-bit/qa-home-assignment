@@ -10,8 +10,9 @@ COPY . .
 # Restore dependencies
 RUN dotnet restore
 
-# Build the project
-RUN dotnet build --no-restore
+# Build in Release mode
+RUN dotnet build --no-restore --configuration Release
 
-# Run tests
+# Run tests and collect coverage
 CMD ["dotnet", "test", "--no-build", "--configuration", "Release", "--collect:XPlat Code Coverage", "--results-directory", "TestResults"]
+
