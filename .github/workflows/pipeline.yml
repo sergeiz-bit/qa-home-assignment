@@ -1,10 +1,12 @@
-name: Run xUnit Tests in Docker
+name: Run xUnit Tests in Docker with Code Coverage
 
 on:
   push:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   test:
@@ -12,19 +14,27 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4        
+        uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build Docker Image
-        run: docker build -t qa-home-assignement .
-
-      - name: Run xUnit Tests in Docker
-        run: docker run --rm qa-home-assignement dotnet test --logger trx --results-directory /test-results
-
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v3
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v3
         with:
-          name: test-results
-          path: /test-results
+          dotnet-version: '8.0.x'
+
+      - name: Build Docker Image for Tests
+        run: docker build -t qa-home-assignment -f Dockerfile .
+
+      - name: Run Tests in Docker and Generate Coverage
+        run: docker run --rm -v ${{ github.workspace }}/TestResults:/app/TestResults qa-home-assignment
+
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Convert Coverage to HTML Report
+        run: reportgenerator -reports:TestResults/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html
+
+      - name: Upload Coverage Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: coverage-report

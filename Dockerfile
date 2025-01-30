@@ -14,4 +14,4 @@ RUN dotnet restore
 RUN dotnet build --no-restore
 
 # Run tests
-CMD ["dotnet", "test", "--logger", "trx", "--results-directory", "/test-results"]
+CMD ["dotnet", "test", "--no-build", "--configuration", "Release", "--collect:XPlat Code Coverage", "--results-directory", "TestResults"]
