@@ -37,9 +37,4 @@ jobs:
           name: code-coverage-report
           path: CoverageReport
 
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: TestResults/*/coverage.cobertura.xml
-          fail_ci_if_error: true
+      
